@@ -1,4 +1,4 @@
-# Wordpress-PostSorter
+# Wordpress-PostSelector
 
 Plugin for wordpress which gives a web-based graphical interface for
 filtering posts in a category, specifically a drag-and-drop interface
