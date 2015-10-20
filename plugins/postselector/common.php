@@ -6,7 +6,7 @@
  */
 class Walker_Category_Options extends Walker {
 	public $tree_type = 'category';
-	public $db_fields = array ('parent' => 'parent', 'id' => 'term_id'); //TODO: decouple this
+	public $db_fields = array( 'parent' => 'parent', 'id' => 'term_id' ); // TODO: decouple this
 
 	/**
 	 * Starts the list before the elements are added.
@@ -20,8 +20,8 @@ class Walker_Category_Options extends Walker {
 	 * @param array  $args   An array of arguments. @see wp_terms_checklist()
 	 */
 	public function start_lvl( &$output, $depth = 0, $args = array() ) {
-		//$indent = str_repeat("&mdash; ", $depth);
-		//$output .= "$indent<ul class='children'>\n";
+		// $indent = str_repeat("&mdash; ", $depth);
+		// $output .= "$indent<ul class='children'>\n";
 	}
 
 	/**
@@ -36,7 +36,7 @@ class Walker_Category_Options extends Walker {
 	 * @param array  $args   An array of arguments. @see wp_terms_checklist()
 	 */
 	public function end_lvl( &$output, $depth = 0, $args = array() ) {
-		//$output .= "$indent</ul>\n";
+		// $output .= "$indent</ul>\n";
 	}
 
 	/**
@@ -58,7 +58,7 @@ class Walker_Category_Options extends Walker {
 		} else {
 			$taxonomy = $args['taxonomy'];
 		}
-		$selected = !empty( $args['current_value'] ) ? ( $args['current_value'] == $category->term_id ? 'selected' : '') : '';
+		$selected = ! empty( $args['current_value'] ) ? ( $args['current_value'] == $category->term_id ? 'selected' : '') : '';
 		/** This filter is documented in wp-includes/category-template.php */
 		$output .= "\n<option value='{$category->term_id}' $selected>" .
 			esc_html( apply_filters( 'the_category', $category->name ) );
@@ -81,12 +81,12 @@ class Walker_Category_Options extends Walker {
 	}
 }
 function wototo_category_options_html( $current_value ) {
-    // see wp_terms_checklist
-    $walker = new Walker_Category_Options;
-    $taxonomy = 'category';
-    $tax = get_taxonomy( $taxonomy );
-    $categories = (array) get_terms( $taxonomy, array( 'get' => 'all' ) );
-    $args = array( 'taxonomy' => $taxonomy, 'current_value' => $current_value );
-    echo call_user_func_array( array( $walker, 'walk' ), array( $categories, 0, $args ) );
+	// see wp_terms_checklist
+	$walker = new Walker_Category_Options;
+	$taxonomy = 'category';
+	$tax = get_taxonomy( $taxonomy );
+	$categories = (array) get_terms( $taxonomy, array( 'get' => 'all' ) );
+	$args = array( 'taxonomy' => $taxonomy, 'current_value' => $current_value );
+	echo call_user_func_array( array( $walker, 'walk' ), array( $categories, 0, $args ) );
 }
 
