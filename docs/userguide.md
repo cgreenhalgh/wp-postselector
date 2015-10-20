@@ -8,13 +8,13 @@ It is currently part of the Wototo Wordpress plugin.
 
 The plugin also adds a custom type `PostSelector`; this can be used on a tablet or large screen to interactively select posts to include an an app. (It is likely to be extended in future to allow posts to also be published.)
 
-From the admin menu select `PostSelector` > `Add New`. Give the PostSelector a title. In the `PostSelector Settings` box choose a post category as input and an app as output. Now `Publish` the PostSelector.
+From the admin menu select `PostSelector` > `Add New`. Give the PostSelector a title. In the `PostSelector Settings` box choose a post category as input and link selection to `Publish or trash` so that your choices control whether posts are published on not. Now `Publish` the PostSelector.
 
 When you view the PostSelector, below the title and description you should see two buttons: `Open in Browser` and `Open in Browser (readonly)`; click the first, which will open the main PostSelector user interface.
 
 In the PostSelector interface you should see three "lanes": "No", "?" and "Yes"; if the category has any (published) posts in it then they should appear, initially in the middle lane.
 
-To see a post in more detail click on it. To select a post drag it to the "Yes" lane. To save the selection and update the output app click `Save Selection` at the top of the screen. To load any extra newly published posts click `Refresh`.
+To see a post in more detail click on it. To select a post drag it to the "Yes" lane. To save the selection and update the the posts (i.e. publish or delete them) click `Save Selection` at the top of the screen. To load any extra newly published posts click `Refresh`.
 
 Note: if you don't have suitable permissions then you should be redirected to a readonly version of the PostSelector view (without the `Refresh` and `Save Selection` buttons).
 

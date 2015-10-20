@@ -30,11 +30,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * To do:
  * - add option to publish selected posts
  * - add option to poll for new items
- * - add option to broadcast view via (say) Union to slave displays
  * - add option to include only draft items
  * - add exit animation
  */
 require_once( dirname( __FILE__ ) . '/common.php' );
+define( STATUS_MODE_NONE, 0 );
+define( STATUS_MODE_PUBLISH, 1 );
 
 add_action( 'init', 'postselector_create_post_types' );
 // Register the app post type
@@ -102,6 +103,13 @@ foreach ( $apps as $app ) {
     <label><input type="hidden" name="postselector_use_union_shown" value="1"/>
        <input type="checkbox" name="postselector_use_union" <?php echo $postselector_use_union ? 'checked' : '' ?> />Share selection via Union server:</label><br/>
     <input type="text" name="postselector_union_url" value="<?php esc_attr( $postselector_union_url ) ?>" placeholder="tryunion.com" /><br/>
+    <label for="postselector_status_mode_id">Link selection to post status:</label><br/>
+<?php
+        $postselector_status_mode = intval( get_post_meta( $post->ID, '_postselector_status_mode', true ) );
+?>    <select name="postselector_status_mode" id="postselector_status_mode_id">
+        <option value="<?php echo STATUS_MODE_NONE ?>" <?php if ( STATUS_MODE_NONE == $postselector_status_mode ) echo 'selected' ?>>&mdash; None &mdash;</option>
+        <option value="<?php echo STATUS_MODE_PUBLISH ?>" <?php if ( STATUS_MODE_PUBLISH == $postselector_status_mode ) echo 'selected' ?>>Publish or trash</option>
+    </select><br/>
 <?php
 }
 add_action( 'save_post', 'postselector_save_postdata' );
@@ -126,6 +134,10 @@ function postselector_save_postdata( $post_id ) {
 	if ( array_key_exists( 'postselector_union_url', $_POST ) ) {
 		update_post_meta( $post_id,
 		'_postselector_union_url', stripslashes( $_POST['postselector_union_url'] ) );
+	}
+	if ( array_key_exists( 'postselector_status_mode', $_POST ) ) {
+		update_post_meta( $post_id,
+		'_postselector_status_mode', intval( $_POST['postselector_status_mode'] ) );
 	}
 }
 add_filter( 'template_include', 'postselector_include_template_function', 1 );
@@ -192,26 +204,35 @@ function postselector_get_posts() {
 	$postselector_input_category = get_post_meta( $post->ID, '_postselector_input_category', true );
 	$posts = array();
 	if ( $postselector_input_category ) {
+		$postselector_status_mode = intval( get_post_meta( $post->ID, '_postselector_status_mode', true ) );
+		$include_status = array( 'publish' );
+		if ( STATUS_MODE_PUBLISH == $postselector_status_mode ) {
+			$include_status = array( 'publish', 'pending', 'draft', 'trash' );
+		}
 		$args = array(
-		'category' => $postselector_input_category,
+			'category' => $postselector_input_category,
 			'post_type' => array( 'post', 'page', 'anywhere_map_post' ),
+			'post_status' => $include_status,
 		);
 		$ps = get_posts( $args );
 		foreach ( $ps as $p ) {
 			if ( current_user_can( 'read_post', $p->ID ) ) {
 				$thumbid = get_post_thumbnail_id( $p->ID );
-				$selected = null;
 				$rank = array_search( $p->ID, $selected_ids );
-				if ( $rank !== false ) {
-					$selected = true; } else {
+				if ( $rank === false ) {
 					$rank = array_search( $p->ID, $rejected_ids );
-					if ( $rank !== false ) {
-						$selected = false; }
+				}
+				if ( $rank === false ) {
+					$rank = null; }
+				$selected = in_array( $p->ID, $selected_ids ) ? true : ( in_array( $p->ID, $rejected_ids ) ? false : null );
+				if ( null === $selected && STATUS_MODE_PUBLISH == $postselector_status_mode ) {
+					if ( 'publish' == $p->post_status ) {
+						$selected = true;
+					} else if ('trash' == $p->post_status ) {
+						$selected = false;
 					}
-					if ( $rank === false ) {
-						$rank = null; }
-					$selected = in_array( $p->ID, $selected_ids ) ? true : ( in_array( $p->ID, $rejected_ids ) ? false : null );
-					$post = array(
+				}
+				$post = array(
 					'title' => $p->post_title,
 					'id' => $p->ID,
 					'content' => filter_content( $p->post_content ),
@@ -221,7 +242,7 @@ function postselector_get_posts() {
 					'selected' => $selected,
 					'rank' => $rank,
 					);
-					$posts[] = $post;
+				$posts[] = $post;
 			}
 		}
 	}
@@ -275,8 +296,8 @@ function postselector_save() {
 		echo '# Invalid request: choices invalid: '.$jchoices.': '.gettype( $choices );
 		wp_die();
 	}
-		// output to app
-		$postselector_output_app = get_post_meta( $post->ID, '_postselector_output_app', true );
+	// output to app
+	$postselector_output_app = get_post_meta( $post->ID, '_postselector_output_app', true );
 	if ( $postselector_output_app ) {
 		$app = get_post( intval( $postselector_output_app ) );
 		if ( ! $app ) {
@@ -293,10 +314,34 @@ function postselector_save() {
 		json_encode( $choices['rejected'] ) );
 		update_post_modified_date( $app->ID );
 	}
-
-		header( 'Content-Type: application/json' );
-		echo 'true';
-		wp_die();
+	$postselector_status_mode = intval( get_post_meta( $post->ID, '_postselector_status_mode', true ) );
+	if ( STATUS_MODE_PUBLISH == $postselector_status_mode ) {
+		if ( ! current_user_can( 'publish_posts' ) ) {
+			// Warning?!
+		} else {
+			foreach ( $choices['selected'] as $pid ) {
+				// Check exists??
+				$post = get_post( $pid );
+				if ( null !== $post && 'publish' !== $post->post_status ) {
+					wp_publish_post( $pid );
+				}
+			}
+		}
+		foreach ( $choices['rejected'] as $pid ) {
+			if ( ! current_user_can( 'delete_post', $pid ) ) {
+				// Warning??
+			} else {
+				// Check exists??
+				$post = get_post( $pid );
+				if ( null !== $post && 'trash' !== $post->post_status ) {
+					wp_delete_post( $pid );
+				}
+			}
+		}	
+	}
+	header( 'Content-Type: application/json' );
+	echo 'true';
+	wp_die();
 }
 if ( is_admin() ) {
 	add_action( 'wp_ajax_postselector_get_posts', 'postselector_get_posts' );
