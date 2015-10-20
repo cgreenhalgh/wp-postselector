@@ -8,6 +8,17 @@ Chris Greenhalgh, The University of Nottingham
 
 Copyright (c) 2014,2015 The University of Nottingham
 
+## What's here?
+
+- `plugins/postselector/` - the plugin itself
+- `Vagrantfile` and `saltstack` - vagrant configuration for a development machine image
+- `test-setup.sh` - script to setup testing pre-requisites (assumes the test DB already exists, as created with salt from Vagrantfile, above)
+- `test-plugins.sh` - script to run tests on plugin (lots of style errors at present)
+- `tests/` and `phpunit.xml` - PHP unit tests (none yet)
+- `docs/` - a bit of documentation
+- `fix-plugins.sh` - script to fix simple style errors
+- `zip-plugins.sh` - script to zip plugins to upload to other wordpress instances
+
 ## Getting started
 
 - install [virtual box](https://www.virtualbox.org/wiki/Downloads)
