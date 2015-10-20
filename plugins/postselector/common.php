@@ -89,4 +89,12 @@ function wototo_category_options_html( $current_value ) {
 	$args = array( 'taxonomy' => $taxonomy, 'current_value' => $current_value );
 	echo call_user_func_array( array( $walker, 'walk' ), array( $categories, 0, $args ) );
 }
+function filter_content ( $content ) {
+	$content = apply_filters( 'the_content', $content );
+	$content = str_replace( ']]>', ']]&gt;', $content );
+	// audio may need fixing - player defaults to hidden in WordPress 4.1 when I test...
+	// <audio class="wp-audio-shortcode" id="audio-0-1" preload="none" style="width: 100%; /* visibility: hidden; */" controls="controls"><source type="audio/mpeg" src="http://172.17.0.6/wp-content/uploads/2015/01/campus.mp3?_=1"><a href="http://172.17.0.6/wp-content/uploads/2015/01/campus.mp3">http://172.17.0.6/wp-content/uploads/2015/01/campus.mp3</a></audio>
+	$content = preg_replace( '/(<audio\s[^\/>]*)visibility\s*:\s*hidden\s*[;]?/', '$1', $content );
+	return $content;
+}
 

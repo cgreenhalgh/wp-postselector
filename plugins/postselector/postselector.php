@@ -34,6 +34,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * - add option to include only draft items
  * - add exit animation
  */
+require_once( dirname( __FILE__ ) . '/common.php' );
+
 add_action( 'init', 'postselector_create_post_types' );
 // Register the app post type
 function postselector_create_post_types() {
@@ -234,9 +236,9 @@ function update_post_modified_date( $post_id ) {
 	$post_modified_gmt = current_time( 'mysql', 1 );
 	global $wpdb;
 	$updated_fields = array(
-	'post_modified' => $post_modified,
+		'post_modified' => $post_modified,
 		'post_modified_gmt' => $post_modified_gmt,
-	);,
+	);
 	$where = array( 'ID' => $post_id );
 	$wpdb->update( $wpdb->posts, $updated_fields, $where );
 	clean_post_cache( $post_id );

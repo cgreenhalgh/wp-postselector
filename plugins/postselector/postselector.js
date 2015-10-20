@@ -109,8 +109,8 @@ function load( id ) {
 			if (data) {
 				var ds = {};
 				for (var i in ndata) {
-					ds[ndata[i].id] = i;
-					var ods = }
+					ds[ndata[i].id] = i; }
+				var ods = {};
 				for (var i in data) {
 					ods[data[i].id] = i; }
 
